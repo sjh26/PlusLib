@@ -188,17 +188,63 @@ public:
     or if the frame's format doesn't match the buffer's frame format,
     then the frame is not added to the buffer.
   */
-  virtual PlusStatus AddItem(vtkImageData* frame, US_IMAGE_ORIENTATION usImageOrientation, US_IMAGE_TYPE imageType, long frameNumber, double unfilteredTimestamp = UNDEFINED_TIMESTAMP,
-                             double filteredTimestamp = UNDEFINED_TIMESTAMP, const PlusTrackedFrame::FieldMapType* customFields = NULL);
+  virtual PlusStatus AddItem(vtkImageData* frame,
+                             US_IMAGE_ORIENTATION usImageOrientation,
+                             US_IMAGE_TYPE imageType,
+                             long frameNumber,
+                             double unfilteredTimestamp = UNDEFINED_TIMESTAMP,
+                             double filteredTimestamp = UNDEFINED_TIMESTAMP,
+                             const PlusTrackedFrame::FieldMapType* customFields = NULL);
 
   /*!
     Add a frame plus a timestamp to the buffer with frame index.
     If the timestamp is  less than or equal to the previous timestamp,
     or if the frame's format doesn't match the buffer's frame format,
     then the frame is not added to the buffer.
+    \param frame object containing image, transform, and/or field data
+    \param frameNumber the number to tag the frame with
+    \param unfilteredTimestamp default to UNDEFINED_TIMESTAMP to let system choose
+    \param filteredTimestamp default to UNDEFINED_TIMESTAMP to let system choose
+    \param customFields optional map of key/value pairs to store in item
+    \return whether or not the buffer was able to add the item
   */
-  virtual PlusStatus AddItem(const PlusVideoFrame* frame, long frameNumber, double unfilteredTimestamp = UNDEFINED_TIMESTAMP,
-                             double filteredTimestamp = UNDEFINED_TIMESTAMP, const PlusTrackedFrame::FieldMapType* customFields = NULL);
+  virtual PlusStatus AddItem(const PlusVideoFrame* frame,
+                             long frameNumber,
+                             double unfilteredTimestamp = UNDEFINED_TIMESTAMP,
+                             double filteredTimestamp = UNDEFINED_TIMESTAMP,
+                             const PlusTrackedFrame::FieldMapType* customFields = NULL);
+
+  /*!
+    Add a frame plus a timestamp to the buffer with frame index.
+    Additionally an optional field name&value can be added,
+    which will be saved as a custom field of the added item.
+    If the timestamp is less than or equal to the previous timestamp,
+    or if the frame's format doesn't match the buffer's frame format,
+    then the frame is not added to the buffer.
+    \param imageDataPtr raw buffer of pixel data
+    \param usImageOrientation override input image orientation of underlying vtkPlusBuffer. See \ref{US_IMAGE_ORIENTATION}
+    \param frameSizeInPx i,j,k dimensions of image
+    \param pixelType VTK pixel type (VTK_CHAR, VTK_DOUBLE, etc...)
+    \param numberOfScalarComponents number of components per pixel (1=grayscale, 3=rgb, 4=rgba, etc...)
+    \param imageType descriptor of how pixel data is laid out, what each component means, etc...
+    \param numberOfBytesToSkip if the pixel data has header data, this enables skipping of header
+    \param frameNumber the number to tag the frame with
+    \param unfilteredTimestamp default to UNDEFINED_TIMESTAMP to let system choose
+    \param filteredTimestamp default to UNDEFINED_TIMESTAMP to let system choose
+    \param customFields optional map of key/value pairs to store in item
+    \return whether or not the buffer was able to add the item
+  */
+  virtual PlusStatus AddItem(void* imageDataPtr,
+                             US_IMAGE_ORIENTATION usImageOrientation,
+                             const int frameSizeInPx[3],
+                             PlusCommon::VTKScalarPixelType pixelType,
+                             int numberOfScalarComponents,
+                             US_IMAGE_TYPE imageType,
+                             int numberOfBytesToSkip,
+                             long frameNumber,
+                             double unfilteredTimestamp = UNDEFINED_TIMESTAMP,
+                             double filteredTimestamp = UNDEFINED_TIMESTAMP,
+                             const PlusTrackedFrame::FieldMapType* customFields = NULL);
 
   /*!
     Add a frame plus a timestamp to the buffer with frame index.
@@ -207,28 +253,98 @@ public:
     If the timestamp is  less than or equal to the previous timestamp,
     or if the frame's format doesn't match the buffer's frame format,
     then the frame is not added to the buffer.
+    \param imageDataPtr raw buffer of pixel data
+    \param usImageOrientation override input image orientation of underlying vtkPlusBuffer. See \ref{US_IMAGE_ORIENTATION}
+    \param frameSizeInPx i,j,k dimensions of image
+    \param pixelType VTK pixel type (VTK_CHAR, VTK_DOUBLE, etc...)
+    \param numberOfScalarComponents number of components per pixel (1=grayscale, 3=rgb, 4=rgba, etc...)
+    \param imageType descriptor of how pixel data is laid out, what each component means, etc... See \ref{US_IMG_TYPE}
+    \param numberOfBytesToSkip if the pixel data has header data, this enables skipping of header
+    \param frameNumber the number to tag the frame with
+    \param unfilteredTimestamp default to UNDEFINED_TIMESTAMP to let system choose
+    \param filteredTimestamp default to UNDEFINED_TIMESTAMP to let system choose
+    \param customFields optional map of key/value pairs to store in item
+    \return whether or not the buffer was able to add the item
   */
-  virtual PlusStatus AddItem(void* imageDataPtr, US_IMAGE_ORIENTATION  usImageOrientation, const int frameSizeInPx[3], PlusCommon::VTKScalarPixelType pixelType, int numberOfScalarComponents,
-                             US_IMAGE_TYPE imageType, int  numberOfBytesToSkip, long frameNumber, double unfilteredTimestamp = UNDEFINED_TIMESTAMP, double filteredTimestamp = UNDEFINED_TIMESTAMP,
+  virtual PlusStatus AddItem(void* imageDataPtr,
+                             US_IMAGE_ORIENTATION usImageOrientation,
+                             const unsigned int frameSizeInPx[3],
+                             PlusCommon::VTKScalarPixelType pixelType,
+                             unsigned int numberOfScalarComponents,
+                             US_IMAGE_TYPE imageType,
+                             int numberOfBytesToSkip,
+                             long frameNumber,
+                             double unfilteredTimestamp = UNDEFINED_TIMESTAMP,
+                             double filteredTimestamp = UNDEFINED_TIMESTAMP,
                              const PlusTrackedFrame::FieldMapType* customFields = NULL);
-  virtual PlusStatus AddItem(void* imageDataPtr, US_IMAGE_ORIENTATION  usImageOrientation, const unsigned int frameSizeInPx[3], PlusCommon::VTKScalarPixelType pixelType,
-                             unsigned int numberOfScalarComponents, US_IMAGE_TYPE imageType, int  numberOfBytesToSkip, long frameNumber, double unfilteredTimestamp = UNDEFINED_TIMESTAMP,
-                             double filteredTimestamp = UNDEFINED_TIMESTAMP, const PlusTrackedFrame::FieldMapType* customFields = NULL);
+
+  /*!
+    Add a video frame to the buffer with frame index.
+
+    This overload assumes that the orientation of the image is the same as the underlying buffers
+    input image orientation. See \ref{US_IMAGE_ORIENTATION}.
+
+    If the timestamp is less than or equal to the previous timestamp, or if the frame's format
+    (pixel type, components, frame size) doesn't match the buffer's frame format, then the frame
+    is not added to the buffer.
+
+    \param imageDataPtr raw buffer of pixel data
+    \param frameSizeInPx i,j,k dimensions of image
+    \param pixelType VTK pixel type (VTK_CHAR, VTK_DOUBLE, etc...)
+    \param numberOfScalarComponents number of components per pixel (1=grayscale, 3=rgb, 4=rgba, etc...)
+    \param imageType descriptor of how pixel data is laid out, what each component means, etc... See \ref{US_IMG_TYPE}
+    \param numberOfBytesToSkip if the pixel data has header data, this enables skipping of header
+    \param frameNumber the number to tag the frame with
+    \param unfilteredTimestamp default to UNDEFINED_TIMESTAMP to let system choose
+    \param filteredTimestamp default to UNDEFINED_TIMESTAMP to let system choose
+    \param customFields optional map of key/value pairs to store in item
+    \return whether or not the buffer was able to add the item
+  */
+  virtual PlusStatus AddItem(void* imageDataPtr,
+                             const unsigned int frameSizeInPx[3],
+                             PlusCommon::VTKScalarPixelType pixelType,
+                             unsigned int numberOfScalarComponents,
+                             US_IMAGE_TYPE imageType,
+                             int numberOfBytesToSkip,
+                             long frameNumber,
+                             double unfilteredTimestamp = UNDEFINED_TIMESTAMP,
+                             double filteredTimestamp = UNDEFINED_TIMESTAMP,
+                             const PlusTrackedFrame::FieldMapType* customFields = NULL);
 
   /*!
     Add custom fields to the new item
     If the timestamp is  less than or equal to the previous timestamp,
     or if the frame's format doesn't match the buffer's frame format,
     then the frame is not added to the buffer.
+    \param customFields map of key/value pairs to store in item
+    \param frameNumber the number to tag the frame with
+    \param unfilteredTimestamp default to UNDEFINED_TIMESTAMP to let system choose
+    \param filteredTimestamp default to UNDEFINED_TIMESTAMP to let system choose
+    \return whether or not the buffer was able to add the item
   */
-  virtual PlusStatus AddItem(const PlusTrackedFrame::FieldMapType& customFields, long frameNumber, double unfilteredTimestamp = UNDEFINED_TIMESTAMP, double filteredTimestamp = UNDEFINED_TIMESTAMP);
+  virtual PlusStatus AddItem(const PlusTrackedFrame::FieldMapType& customFields,
+                             long frameNumber,
+                             double unfilteredTimestamp = UNDEFINED_TIMESTAMP,
+                             double filteredTimestamp = UNDEFINED_TIMESTAMP);
 
   /*!
-  Add a matrix plus status to the list, with an exactly known timestamp value (e.g., provided by a high-precision hardware timer).
-  If the timestamp is less than or equal to the previous timestamp, then nothing  will be done.
-  If filteredTiemstamp argument is undefined then the filtered timestamp will be computed from the input unfiltered timestamp.
+    Add a matrix plus status to the list, with an exactly known timestamp value (e.g., provided by a high-precision hardware timer).
+    If the timestamp is less than or equal to the previous timestamp, then nothing  will be done.
+    If filteredTiemstamp argument is undefined then the filtered timestamp will be computed from the input unfiltered timestamp.
+    \param matrix the 4x4 matrix entry to store
+    \param status the status of the tool for this item (TOOL_OK, TOOL_MISSING, etc...)
+    \param frameNumber the number to tag the frame with
+    \param unfilteredTimestamp default to UNDEFINED_TIMESTAMP to let system choose
+    \param filteredTimestamp default to UNDEFINED_TIMESTAMP to let system choose
+    \param customFields map of key/value pairs to store in item
+    \return whether or not the buffer was able to add the item
   */
-  PlusStatus AddTimeStampedItem(vtkMatrix4x4* matrix, ToolStatus status, unsigned long frameNumber, double unfilteredTimestamp, double filteredTimestamp = UNDEFINED_TIMESTAMP, const PlusTrackedFrame::FieldMapType* customFields = NULL);
+  PlusStatus AddTimeStampedItem(vtkMatrix4x4* matrix,
+                                ToolStatus status,
+                                unsigned long frameNumber,
+                                double unfilteredTimestamp,
+                                double filteredTimestamp = UNDEFINED_TIMESTAMP,
+                                const PlusTrackedFrame::FieldMapType* customFields = NULL);
 
   /*! Get the device which owns this source. */
   // TODO : consider a re-design of this idea
@@ -252,8 +368,8 @@ public:
   virtual int GetNumberOfScalarComponents();
 
   /*!
-  Get the number of bytes per pixel
-  It is the number of bytes per scalar multiplied by the number of scalar components.
+    Get the number of bytes per pixel
+    It is the number of bytes per scalar multiplied by the number of scalar components.
   */
   int GetNumberOfBytesPerPixel();
 
