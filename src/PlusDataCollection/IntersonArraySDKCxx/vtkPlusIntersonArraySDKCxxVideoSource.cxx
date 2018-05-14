@@ -107,8 +107,8 @@ public:
 
     this->BModeBufferToVtkImage = vtkImageImport::New();
     this->BModeBufferToVtkImage->SetDataScalarType(VTK_UNSIGNED_CHAR);
-    this->BModeBufferToVtkImage->SetDataExtent(0, ContainerType::MAX_SAMPLES / 2 - 1, 0, ContainerType::NBOFLINES - 1, 0, 0);
-    this->BModeBufferToVtkImage->SetWholeExtent(0, ContainerType::MAX_SAMPLES / 2 - 1, 0, ContainerType::NBOFLINES - 1, 0, 0);
+    this->BModeBufferToVtkImage->SetDataExtent(0, ContainerType::MAX_SAMPLES - 1, 0, ContainerType::NBOFLINES - 1, 0, 0);
+    this->BModeBufferToVtkImage->SetWholeExtent(0, ContainerType::MAX_SAMPLES - 1, 0, ContainerType::NBOFLINES - 1, 0, 0);
 
     this->RfBufferToVtkImage = vtkImageImport::New();
     this->RfBufferToVtkImage->SetDataScalarType(VTK_SHORT);
@@ -309,7 +309,7 @@ PlusStatus vtkPlusIntersonArraySDKCxxVideoSource::InternalConnect()
 
   ContainerType* container = this->Internal->GetContainer();
   container->SetHWControls(hwControls);
-  container->AbortScan();
+  //container->AbortScan();
 
   std::vector<vtkPlusDataSource*> rfSources;
   vtkPlusDataSource* source = NULL;
@@ -324,7 +324,7 @@ PlusStatus vtkPlusIntersonArraySDKCxxVideoSource::InternalConnect()
   else
   {
     container->SetRFData(false);
-    width_samples = ContainerType::MAX_SAMPLES / 2;
+    width_samples = ContainerType::MAX_SAMPLES;
   }
 
   LOG_DEBUG("Interson Array SDK version " << this->Internal->GetSdkVersion() <<
@@ -335,9 +335,10 @@ PlusStatus vtkPlusIntersonArraySDKCxxVideoSource::InternalConnect()
   const int depth = 100;
   const int heightLines = hwControls->GetLinesPerArray();
   const int steering = 0;
+  const int depthCfm = 50;
   container->IdleInitScanConverter(depth, width_samples, heightLines, probeId,
-                                   steering, false, false, 0);
-  container->HardInitScanConverter(depth, width_samples, heightLines, steering);
+                                   steering, depthCfm, false, false, 0, false);
+  container->HardInitScanConverter(depth, width_samples, heightLines, steering, depthCfm);
 
   std::vector<vtkPlusDataSource*> bmodeSources;
   this->GetVideoSourcesByPortName(vtkPlusDevice::BMODE_PORT_NAME, bmodeSources);
@@ -468,7 +469,7 @@ PlusStatus vtkPlusIntersonArraySDKCxxVideoSource::InternalConnect()
       else
       {
         source->SetOutputImageOrientation(US_IMG_ORIENT_MF);
-        source->SetInputFrameSize(ContainerType::MAX_SAMPLES / 2,
+        source->SetInputFrameSize(ContainerType::MAX_SAMPLES,
                                   hwControls->GetLinesPerArray(),
                                   1);
       }
@@ -500,7 +501,7 @@ PlusStatus vtkPlusIntersonArraySDKCxxVideoSource::InternalDisconnect()
 
   this->StopRecording();
   ContainerType* container = this->Internal->GetContainer();
-  container->AbortScan();
+  //container->AbortScan();
 
   return PLUS_SUCCESS;
 }
@@ -509,7 +510,7 @@ PlusStatus vtkPlusIntersonArraySDKCxxVideoSource::InternalDisconnect()
 PlusStatus vtkPlusIntersonArraySDKCxxVideoSource::InternalStartRecording()
 {
   ContainerType* container = this->Internal->GetContainer();
-  container->AbortScan();
+  //container->AbortScan();
 
   HWControlsType* hwControls = this->Internal->GetHWControls();
 
@@ -556,7 +557,7 @@ PlusStatus vtkPlusIntersonArraySDKCxxVideoSource::InternalStopRecording()
   ContainerType* container = this->Internal->GetContainer();
   container->StopReadScan();
   Sleep(100);   // "time to stop"
-  container->DisposeScan();
+  //container->DisposeScan();
 
   return PLUS_SUCCESS;
 }
