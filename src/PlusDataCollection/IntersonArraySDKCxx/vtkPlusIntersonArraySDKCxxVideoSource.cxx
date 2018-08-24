@@ -332,10 +332,10 @@ PlusStatus vtkPlusIntersonArraySDKCxxVideoSource::InternalConnect()
 
   // Even if we do not use their SDK scan converter, we have to initialize the
   // scan converter to get the probe fully initialized.
-  const int depth = 100;
+  const int depth = 52;
   const int heightLines = hwControls->GetLinesPerArray();
   const int steering = 0;
-  const int depthCfm = 50;
+  const int depthCfm = 26;
   container->IdleInitScanConverter(depth, width_samples, heightLines, probeId,
                                    steering, depthCfm, false, false, 0, false);
   container->HardInitScanConverter(depth, width_samples, heightLines, steering, depthCfm);
@@ -694,7 +694,7 @@ PlusStatus vtkPlusIntersonArraySDKCxxVideoSource::SetProbeFrequencyMhz(double fr
   frequency = supportedFrequencies[frequencyIndex];
   LOG_DEBUG("Current frequency is " << frequency / 1.0e6);
 
-  const int focusIndex = 0;
+  const int focusIndex = 1;
   const int steering = 0;
   if (!hwControls->SetFrequencyAndFocus(frequencyIndex, focusIndex, steering))
   {
